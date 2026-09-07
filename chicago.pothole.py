@@ -18,7 +18,6 @@ data = response.json()
 df = pd.DataFrame(data)
 
 print(f"Downloaded {len(df)} pothole requests")
-print(df.head())
 
 df.to_csv("potholes_raw.csv", index=False)
 print("Saved to potholes_raw.csv")
