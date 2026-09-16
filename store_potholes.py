@@ -9,7 +9,7 @@ still_open = pd.read_csv("potholes_open_cleaned.csv")
 conn = sqlite3.connect("potholes.db")
 
 closed.to_sql("closed_requests", conn, if_exists="replace", index = False)
-still_open.to_sql("open_requests", conn, if_exists="replace", index=False)
+still_open.to_sql("open_requests", conn, if_exists="replace", index = False)
 
 
 conn.close()
