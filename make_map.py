@@ -27,7 +27,7 @@ folium.Choropleth(
     fill_color="YlOrRd", # color scale yellow to red 
     fill_opacity=0.7,
     line_opacity=0.3,
-    legend_name="Average Response Tome (days)",
+    legend_name="Average Response Time (days)",
 ).add_to(m)
 
 
