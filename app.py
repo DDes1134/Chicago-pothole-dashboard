@@ -1,9 +1,12 @@
 import streamlit as st 
 import sqlite3
 import pandas as pd 
+import plotly.express as px 
+import folium
+from streamlit_folium import st_folium
 
 # make width of the screen + give Title 
-st.set_page_config(page_title="2026 Chicago Pothole Dashboard", layout="wide")
+st.set_page_config(page_title="Live 2026 Chicago Pothole Dashboard", layout="wide")
 
 
 #big heading 
@@ -27,3 +30,43 @@ conn.close
 st.subheader("Average Pothole Repair Time by Ward")
 
 st.dataframe(by_ward)
+
+#importing plotly 
+by_ward_chart = by_ward.copy()
+by_ward_chart["ward"] = by_ward_chart["ward"].astype(str)
+
+fig = px.bar(
+    by_ward_chart,
+    x="ward",
+    y="avg_days",
+    color="avg_days",
+    color_continuous_scale="YlOrRd",
+    labels={"ward": "Ward", "avg_days": "Average Response Time (Days)"},
+    title="Average Pothole Repair Time by Ward (2026)"
+)
+fig.update_layout(xaxis={'categoryorder': 'array', 'categoryarray': by_ward["ward"]})
+
+st.subheader("Ranked: Slowest to Fastest Wards")
+
+# adding plotly figure 
+st.plotly_chart(fig, use_container_width=True)
+
+st.subheader("Map: Average Response Time By Ward")
+
+# adding folium map
+m = folium.Map(location=[41.8781, -87.6298], zoom_start=10, tiles=None)
+
+folium.Choropleth(
+    geo_data="chicago_wards.geojson",
+    data=by_ward,
+    columns=["ward", "avg_days"],
+    key_on="feature.properties.ward",
+    fill_color="YlOrRd",
+    fill_opacity=0.7,
+    line_opacity=0.3,
+    legend_name="Average Response Time (days)"
+).add_to(m)
+
+# brige function to allow folium to opearate in streamlit 
+st_folium(m, width=1200, height=600)
+
