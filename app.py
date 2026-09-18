@@ -11,7 +11,7 @@ st.set_page_config(page_title="Live 2026 Chicago Pothole Dashboard", layout="wid
 
 #big heading 
 st.title("2026 Chicago Pothole Response Dashboard")
-st.write("Tracking how long the City of Chicago takes to fix reported potholes in 2026. ")
+st.write("Live Tracking on how long the City of Chicago takes to fix reported potholes in 2026. ")
 
 #reconnecting to data base
 conn = sqlite3.connect("potholes.db")
@@ -25,6 +25,34 @@ ORDER BY avg_days DESC
 """
 by_ward = pd.read_sql(ward_query, conn)
 conn.close
+
+st.subheader("Map: Average Response Time By Ward")
+
+# pulling the CartoDB key out of secrets.toml instead of hardcoding it,
+# so the key itself never ends up visible in this file or on GitHub
+CARTO_API_KEY = st.secrets["CARTO_API_KEY"]
+
+# adding folium map
+m = folium.Map(
+    location=[41.8781, -87.6298],
+    zoom_start=10,
+    tiles=f"https://basemaps.cartocdn.com/light_all/{{z}}/{{x}}/{{y}}{{r}}.png?api_key={CARTO_API_KEY}",
+    attr="CartoDB"
+)
+
+folium.Choropleth(
+    geo_data="chicago_wards.geojson",
+    data=by_ward,
+    columns=["ward", "avg_days"],
+    key_on="feature.properties.ward",
+    fill_color="YlOrRd",
+    fill_opacity=0.7,
+    line_opacity=0.3,
+    legend_name="Average Response Time (days)"
+).add_to(m)
+
+# brige function to allow folium to opearate in streamlit 
+st_folium(m, width=1200, height=600)
 
 #subheader
 st.subheader("Average Pothole Repair Time by Ward")
@@ -50,23 +78,3 @@ st.subheader("Ranked: Slowest to Fastest Wards")
 
 # adding plotly figure 
 st.plotly_chart(fig, use_container_width=True)
-
-st.subheader("Map: Average Response Time By Ward")
-
-# adding folium map
-m = folium.Map(location=[41.8781, -87.6298], zoom_start=10, tiles=None)
-
-folium.Choropleth(
-    geo_data="chicago_wards.geojson",
-    data=by_ward,
-    columns=["ward", "avg_days"],
-    key_on="feature.properties.ward",
-    fill_color="YlOrRd",
-    fill_opacity=0.7,
-    line_opacity=0.3,
-    legend_name="Average Response Time (days)"
-).add_to(m)
-
-# brige function to allow folium to opearate in streamlit 
-st_folium(m, width=1200, height=600)
-
