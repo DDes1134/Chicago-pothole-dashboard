@@ -26,6 +26,17 @@ ORDER BY avg_days DESC
 by_ward = pd.read_sql(ward_query, conn)
 conn.close
 
+# Sorted list of wards for the dropdown, plus an "All Wards" option
+ward_options = ["All Wards"] + sorted(by_ward["ward"].unique().tolist())
+selected_ward = st.selectbox("Select a ward to highlight:", ward_options)
+
+# If they picked a specific ward (not "All Wards"), filter the table
+# down to just that one row so they can see its exact numbers.
+if selected_ward != "All Wards":
+    filtered = by_ward[by_ward["ward"] == selected_ward]
+    st.write(f"Ward {selected_ward}: average {filtered['avg_days'].values[0]:.1f} days, "
+             f"{filtered['total_requests'].values[0]} total requests")
+
 st.subheader("Map: Average Response Time By Ward")
 
 # pulling the CartoDB key out of secrets.toml instead of hardcoding it,
@@ -49,6 +60,14 @@ folium.Choropleth(
     fill_opacity=0.7,
     line_opacity=0.3,
     legend_name="Average Response Time (days)"
+).add_to(m)
+
+# This adds an invisible layer on top of your colored wards, 
+# Choropleth alone doesn't support this, so did it separately.
+folium.GeoJson(
+    "chicago_wards.geojson",
+    style_function=lambda x: {"fillColor": "transparent", "color": "transparent", "weight": 0},
+    tooltip=folium.GeoJsonTooltip(fields=["ward"], aliases=["Ward:"])
 ).add_to(m)
 
 # brige function to allow folium to opearate in streamlit 
