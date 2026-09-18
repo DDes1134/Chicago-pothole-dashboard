@@ -36,7 +36,7 @@ CARTO_API_KEY = st.secrets["CARTO_API_KEY"]
 m = folium.Map(
     location=[41.8781, -87.6298],
     zoom_start=10,
-    tiles=f"https://basemaps.cartocdn.com/light_all/{{z}}/{{x}}/{{y}}{{r}}.png?api_key={CARTO_API_KEY}",
+    tiles=f"https://basemaps.cartocdn.com/rastertiles/voyager/{{z}}/{{x}}/{{y}}.png?key={CARTO_API_KEY}",
     attr="CartoDB"
 )
 
